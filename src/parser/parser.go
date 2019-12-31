@@ -1,10 +1,7 @@
 package parser
 
-type Settings struct {
-	Static  Static
-	Dynamic Dynamic
-}
+type Parser = func(*string) (*Settings, *States)
 
-type Static map[string]interface{}
+type Settings map[string]interface{}
 
-type Dynamic map[string]interface{}
+type States []map[string]interface{}

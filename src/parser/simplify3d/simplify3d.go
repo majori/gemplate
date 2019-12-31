@@ -2,13 +2,14 @@ package simplify3d
 
 import (
 	"bufio"
+	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/majori/gemplate/src/parser"
+	p "github.com/majori/gemplate/src/parser"
 )
 
-func parseStaticRow(raw string) interface{} {
+func parseSettingsRow(raw string) interface{} {
 	// Value is probably g-code
 	if strings.Contains(raw, ";") {
 		return raw
@@ -19,7 +20,7 @@ func parseStaticRow(raw string) interface{} {
 		items := strings.Split(raw, ",")
 		listValues := make([]interface{}, 0)
 		for _, value := range items {
-			listValues = append(listValues, parseStaticRow(value))
+			listValues = append(listValues, parseSettingsRow(value))
 		}
 		return listValues
 	}
@@ -42,12 +43,15 @@ func parseStaticRow(raw string) interface{} {
 	return raw
 }
 
-func parseStaticSettings(source *bufio.Scanner) parser.Static {
-	static := make(parser.Static)
+func parseSettings(source *string) *p.Settings {
+	static := make(p.Settings)
 
 	start := false
-	for source.Scan() {
-		row := strings.TrimSpace(source.Text())
+
+	scanner := bufio.NewScanner(strings.NewReader(*source))
+
+	for scanner.Scan() {
+		row := strings.TrimSpace(scanner.Text())
 
 		if row == "" && !start {
 			continue
@@ -64,19 +68,58 @@ func parseStaticSettings(source *bufio.Scanner) parser.Static {
 			break
 		}
 
+		// Remove ";" from beginning
 		row = strings.TrimSpace(row[1:])
 
 		if start {
 			setting := strings.SplitN(row, ",", 2)
-			static[setting[0]] = parseStaticRow(setting[1])
+			if setting[1] == "" {
+				continue
+			}
+			static[setting[0]] = parseSettingsRow(setting[1])
 		}
 	}
 
-	return static
+	return &static
 }
 
-func ParseSettings(source *bufio.Scanner) parser.Settings {
-	return parser.Settings{
-		Static: parseStaticSettings(source),
+func parseState(source *string) *p.States {
+	states := p.States{}
+	layer := 0
+	var z float32 = 0.0
+
+	scanner := bufio.NewScanner(strings.NewReader(*source))
+	for scanner.Scan() {
+		row := scanner.Text()
+		state := make(map[string]interface{})
+
+		findSubmatch := func(exp string) (string, bool) {
+			regex := regexp.MustCompile(exp)
+			submatches := regex.FindStringSubmatch(row)
+			if len(submatches) > 0 {
+				return submatches[1], true
+			} else {
+				return "", false
+			}
+		}
+
+		if match, ok := findSubmatch("^; layer (\\d+)"); ok {
+			layer, _ = strconv.Atoi(match)
+		}
+
+		if match, ok := findSubmatch("^;.*Z = (\\d*\\.?\\d*)"); ok {
+			parsed, _ := strconv.ParseFloat(match, 32)
+			z = float32(parsed)
+		}
+
+		state["layer"] = layer
+		state["z"] = z
+		states = append(states, state)
 	}
+
+	return &states
+}
+
+func Parse(source *string) (*p.Settings, *p.States) {
+	return parseSettings(source), parseState(source)
 }

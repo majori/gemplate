@@ -22,3 +22,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Sample G-Code files
+*.gcode
+!*-test.gcode

@@ -1,9 +1,7 @@
 package simplify3d
 
 import (
-	"bufio"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -16,10 +14,11 @@ func TestParseStaticSettings(t *testing.T) {
 		;   intlist,1,1
 		; 	float,1.1
 		;   floatlist,0.5,0.5
-		;   gcode,M400 ; wait for moves to finish,M104 S0 T0 ; turn off back extruder,M104 S0 T1 ...`
+		;   empty,
+		;   gcode,M400 ; wait for moves to finish,M104 S0 T0 ; turn off back extruder,M104 S0 T1 ...
+	`
 
-	scanner := bufio.NewScanner(strings.NewReader(sample))
-	static := parseStaticSettings(scanner)
+	static := *parseSettings(&sample)
 
 	testValue := func(key string, kind reflect.Kind) {
 		if reflect.TypeOf(static[key]).Kind() != kind {
@@ -49,4 +48,8 @@ func TestParseStaticSettings(t *testing.T) {
 	testList("floatlist", reflect.Float64)
 
 	testValue("gcode", reflect.String)
+
+	if static["empty"] != nil {
+		t.Errorf("Key \"empty\" should not exist")
+	}
 }
