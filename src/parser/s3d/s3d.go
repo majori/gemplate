@@ -1,4 +1,4 @@
-package simplify3d
+package s3d
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	p "github.com/majori/gemplate/src/parser"
+	p "github.com/majori/goco/src/parser"
 )
 
 func parseSettingsRow(raw string) interface{} {
@@ -45,10 +45,8 @@ func parseSettingsRow(raw string) interface{} {
 
 func parseSettings(source *string) *p.Settings {
 	static := make(p.Settings)
-
-	start := false
-
 	scanner := bufio.NewScanner(strings.NewReader(*source))
+	start := false
 
 	for scanner.Scan() {
 		row := strings.TrimSpace(scanner.Text())

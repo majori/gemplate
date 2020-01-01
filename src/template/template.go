@@ -3,7 +3,7 @@ package template
 import (
 	"io"
 
-	p "github.com/majori/gemplate/src/parser"
+	p "github.com/majori/goco/src/parser"
 )
 
 type Template struct {

@@ -1,4 +1,4 @@
-package simplify3d
+package s3d
 
 import (
 	"reflect"
