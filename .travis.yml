@@ -1,3 +1,14 @@
 language: go
 go:
   - "1.13"
+
+before_install:
+  # gox simplifies building for multiple architectures
+  - go get github.com/mitchellh/gox
+
+script:
+  - go get -t -v ./...
+  - diff -u <(echo -n) <(gofmt -d .)
+  - go vet $(go list ./... | grep -v /vendor/)
+  - go test -v -race ./...
+  - gox -os="linux darwin windows" -arch="amd64" -osarch="linux/arm" -output="goco.." -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...
