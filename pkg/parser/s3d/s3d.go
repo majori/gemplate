@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	p "github.com/majori/goco/src/parser"
+	p "github.com/majori/goco/pkg/parser"
 )
 
 func parseSettingsRow(raw string) interface{} {
@@ -91,22 +91,22 @@ func parseState(source *string) *p.States {
 		row := scanner.Text()
 		state := make(map[string]interface{})
 
-		findSubmatch := func(exp string) (string, bool) {
+		findSubmatch := func(exp string) ([]string, bool) {
 			regex := regexp.MustCompile(exp)
 			submatches := regex.FindStringSubmatch(row)
 			if len(submatches) > 0 {
-				return submatches[1], true
+				return submatches[1:], true
 			} else {
-				return "", false
+				return nil, false
 			}
 		}
 
 		if match, ok := findSubmatch("^; layer (\\d+)"); ok {
-			layer, _ = strconv.Atoi(match)
+			layer, _ = strconv.Atoi(match[0])
 		}
 
 		if match, ok := findSubmatch("^;.*Z = (\\d*\\.?\\d*)"); ok {
-			parsed, _ := strconv.ParseFloat(match, 32)
+			parsed, _ := strconv.ParseFloat(match[0], 32)
 			z = float32(parsed)
 		}
 

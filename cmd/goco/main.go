@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	p "github.com/majori/goco/src/parser"
-	"github.com/majori/goco/src/parser/s3d"
-	"github.com/majori/goco/src/template"
+	p "github.com/majori/goco/pkg/parser"
+	"github.com/majori/goco/pkg/parser/s3d"
+	"github.com/majori/goco/pkg/template"
 )
 
 type Delimiter struct {
